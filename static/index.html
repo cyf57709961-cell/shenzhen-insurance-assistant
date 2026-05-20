@@ -4,343 +4,1516 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>深圳五险一金智能助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/marked@9.1.6/marked.min.js"></script>
 <style>
+/* ═══════════════════════════════════════════════════════════════
+   Design System — 墨韵 · Refined Editorial
+   Inspired by premium Chinese typography and traditional ink aesthetics
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
-  --ink-900: #1a1814; --ink-700: #3d3930; --ink-500: #6b6559;
-  --ink-300: #a0998c; --ink-100: #e5e0d5;
-  --paper: #faf8f4; --surface: #fffdf8;
-  --vermilion: #c44536; --jade: #3d6b64; --gold: #b8923e;
-  --radius-md: 14px; --radius-lg: 22px;
-  --shadow-md: 0 4px 20px rgba(26,24,20,.08);
-  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  --ease-out: cubic-bezier(0.16,1,0.3,1);
+  /* ── Core palette ─────────── */
+  --ink-900: #1a1814;
+  --ink-700: #3d3930;
+  --ink-500: #6b6559;
+  --ink-300: #a0998c;
+  --ink-200: #c7c0b3;
+  --ink-100: #e5e0d5;
+
+  --paper: #faf8f4;
+  --paper-warm: #f5f1e8;
+  --surface: #fffdf8;
+  --surface-hover: #fefcf6;
+
+  --vermilion: #c44536;
+  --vermilion-deep: #a8382b;
+  --vermilion-soft: #fdf2ef;
+  --vermilion-glow: rgba(196, 69, 54, 0.12);
+
+  --jade: #3d6b64;
+  --jade-soft: #eef5f4;
+  --jade-glow: rgba(61, 107, 100, 0.08);
+
+  --gold: #b8923e;
+  --gold-soft: #fdf8ef;
+  --gold-glow: rgba(184, 146, 62, 0.12);
+
+  /* ── Spacing scale ────────── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* ── Radii ────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ──────────────── */
+  --shadow-xs: 0 1px 2px rgba(26, 24, 20, 0.04);
+  --shadow-sm: 0 2px 8px rgba(26, 24, 20, 0.06);
+  --shadow-md: 0 4px 20px rgba(26, 24, 20, 0.08);
+  --shadow-lg: 0 8px 40px rgba(26, 24, 20, 0.10);
+  --shadow-xl: 0 16px 64px rgba(26, 24, 20, 0.14);
+
+  /* ── Typography ───────────── */
+  --font-display: "Noto Serif SC", "SimSun", "STSong", "Songti SC", serif;
+  --font-body: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "Fira Code", "Consolas", "Courier New", monospace;
+
+  /* ── Transitions ──────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { font-size:16px; -webkit-font-smoothing:antialiased; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
 body {
-  font-family:var(--font-body); background:var(--paper); color:var(--ink-900);
-  min-height:100vh; display:flex; flex-direction:column; line-height:1.6;
+  font-family: var(--font-body);
+  font-weight: 400;
+  background: var(--paper);
+  color: var(--ink-900);
+  height: 100vh;
+  overflow: hidden;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
 }
-/* ── Header ─────────── */
+
+/* ── Grain overlay ──────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+}
+
+/* ── Subtle paper fiber texture ─────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.018;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(139, 119, 90, 0.5) 2px,
+    rgba(139, 119, 90, 0.5) 2.5px
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Header — Refined identity bar
+   ═══════════════════════════════════════════════════════════════ */
+
 header {
-  background:var(--surface); border-bottom:1px solid var(--ink-100);
-  padding:16px 24px; display:flex; justify-content:space-between; align-items:center;
-  box-shadow:var(--shadow-md); position:sticky; top:0; z-index:10;
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(135deg, #2c2418 0%, #3a3024 50%, #2c2418 100%);
+  color: var(--paper);
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 24px rgba(26, 24, 20, 0.18);
 }
-header h1 { font-size:1.15rem; font-weight:600; color:var(--vermilion); }
-header .profile-badge {
-  font-size:0.8rem; color:var(--ink-500); background:var(--ink-100);
-  padding:4px 14px; border-radius:999px; cursor:pointer; border:none;
-  font-family:inherit; transition:all .2s var(--ease-out);
+
+/* Decorative bottom rule */
+header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--vermilion) 0%,
+    var(--vermilion) 20%,
+    var(--gold) 45%,
+    transparent 65%
+  );
 }
-header .profile-badge:hover { background:var(--vermilion); color:#fff; }
-/* ── Main ─────────── */
-main {
-  flex:1; max-width:800px; width:100%; margin:0 auto; padding:24px;
-  display:flex; flex-direction:column;
+
+header .brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--vermilion), #d47a6b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(196, 69, 54, 0.3);
+  flex-shrink: 0;
 }
-/* ── Profile Form ──── */
-.profile-form { display:none; }
-.profile-form.active { display:block; }
-.profile-form h2 {
-  font-size:1.3rem; margin-bottom:24px; color:var(--ink-700);
-  text-align:center;
+
+header .brand-text {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #f2ede4;
 }
-.form-grid {
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
-  gap:16px; margin-bottom:24px;
+
+header .status-indicator {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(242, 237, 228, 0.6);
+  letter-spacing: 0.03em;
 }
-.form-group { display:flex; flex-direction:column; gap:6px; }
-.form-group label {
-  font-size:0.8rem; font-weight:500; color:var(--ink-500);
+
+header .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6cc785;
+  box-shadow: 0 0 8px rgba(108, 199, 133, 0.5);
+  animation: statusPulse 3s ease-in-out infinite;
 }
-.form-group input, .form-group select {
-  padding:10px 14px; border:1.5px solid var(--ink-200); border-radius:var(--radius-md);
-  font-size:0.9rem; font-family:inherit; background:var(--surface);
-  color:var(--ink-900); transition:border-color .2s var(--ease-out);
-  outline:none;
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
 }
-.form-group input:focus, .form-group select:focus { border-color:var(--vermilion); }
-.form-hint { font-size:0.7rem; color:var(--ink-300); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Layout
+   ═══════════════════════════════════════════════════════════════ */
+
+.layout {
+  display: flex;
+  height: calc(100vh - 56px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Sidebar — Elegant profile drawer
+   ═══════════════════════════════════════════════════════════════ */
+
+.sidebar {
+  width: 300px;
+  min-width: 300px;
+  background: var(--surface);
+  border-right: 1px solid var(--ink-100);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.sidebar-header {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--ink-100);
+}
+
+.sidebar-header h3 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.sidebar-header .subtitle {
+  font-size: 12px;
+  color: var(--ink-300);
+  letter-spacing: 0.04em;
+}
+
+.sidebar-body {
+  flex: 1;
+  padding: 8px 20px;
+  overflow-y: auto;
+}
+
+/* ── Profile view ──────────────────────────────────────────── */
+
+.profile-view .field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(229, 224, 213, 0.5);
+  transition: background var(--duration-fast) var(--ease-out);
+  border-radius: var(--radius-sm);
+  margin: 1px -8px;
+}
+
+.profile-view .field:hover {
+  background: var(--surface-hover);
+}
+
+.profile-view .field:last-child { border-bottom: none; }
+
+.profile-view .field .label {
+  color: var(--ink-500);
+  font-size: 13px;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.profile-view .field .value {
+  font-weight: 500;
+  font-size: 13px;
+  text-align: right;
+  color: var(--ink-700);
+  font-family: var(--font-display);
+}
+
+.profile-view .field .value.empty {
+  color: var(--ink-200);
+  font-weight: 400;
+  font-style: italic;
+  font-family: var(--font-body);
+}
+
+/* ── Profile edit ──────────────────────────────────────────── */
+
+.profile-edit { display: none; }
+
+.profile-edit.active {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.profile-edit label {
+  font-size: 11px;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.profile-edit select,
+.profile-edit input {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid var(--ink-100);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink-900);
+  outline: none;
+  transition: all var(--duration-fast) var(--ease-out);
+  appearance: none;
+}
+
+.profile-edit select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6559' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.profile-edit select:focus,
+.profile-edit input:focus {
+  border-color: var(--vermilion);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--vermilion-glow);
+}
+
+.profile-edit input:focus {
+  box-shadow: 0 0 0 4px var(--vermilion-glow);
+}
+
+.sidebar-footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--ink-100);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+
 .btn {
-  padding:12px 32px; border:none; border-radius:var(--radius-lg); cursor:pointer;
-  font-size:0.95rem; font-weight:500; font-family:inherit;
-  transition:all .2s var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all var(--duration-fast) var(--ease-out);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-decoration: none;
 }
-.btn-primary { background:var(--vermilion); color:#fff; }
-.btn-primary:hover { background:#a8382b; }
-.btn-submit-wrapper { text-align:center; margin-top:8px; }
-/* ── Chat Area ──────── */
-.chat-area { display:none; flex:1; flex-direction:column; }
-.chat-area.active { display:flex; }
+
+.btn-primary {
+  background: var(--vermilion);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(196, 69, 54, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--vermilion-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(196, 69, 54, 0.3);
+}
+
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink-500);
+  border: 1.5px solid var(--ink-100);
+}
+
+.btn-outline:hover {
+  border-color: var(--vermilion);
+  color: var(--vermilion);
+  background: var(--vermilion-soft);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-500);
+  padding: 8px 12px;
+}
+
+.btn-ghost:hover {
+  background: var(--paper-warm);
+  color: var(--ink-700);
+}
+
+.btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 6px; }
+
+.btn-block { width: 100%; }
+
+.btn-icon {
+  width: 36px; height: 36px; padding: 0;
+  border-radius: 50%;
+  font-size: 16px;
+}
+
+.sidebar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Chat Area
+   ═══════════════════════════════════════════════════════════════ */
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  min-width: 0;
+  position: relative;
+}
+
+/* ── Messages container ────────────────────────────────────── */
+
 .messages {
-  flex:1; overflow-y:auto; padding:8px 0; display:flex; flex-direction:column; gap:16px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  scroll-behavior: smooth;
 }
-.msg { max-width:85%; padding:12px 18px; border-radius:var(--radius-lg); font-size:0.92rem; line-height:1.65; }
-.msg.user {
-  align-self:flex-end; background:var(--ink-100); color:var(--ink-900);
-  border-bottom-right-radius:4px;
+
+/* ── Message bubbles ───────────────────────────────────────── */
+
+.message {
+  display: flex;
+  gap: 12px;
+  max-width: 72%;
+  animation: msgEnter 0.4s var(--ease-out) both;
 }
-.msg.assistant {
-  align-self:flex-start; background:var(--surface); color:var(--ink-900);
-  border:1px solid var(--ink-100); border-bottom-left-radius:4px;
+
+@keyframes msgEnter {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.msg.assistant p { margin:0.4em 0; }
-.msg.assistant p:first-child { margin-top:0; }
-.msg.assistant p:last-child { margin-bottom:0; }
-.msg.assistant table { border-collapse:collapse; margin:8px 0; font-size:0.85rem; width:100%; }
-.msg.assistant th, .msg.assistant td { border:1px solid var(--ink-200); padding:6px 10px; text-align:left; }
-.msg.assistant th { background:var(--ink-100); }
-.msg.assistant strong { color:var(--vermilion); }
-.msg.assistant blockquote {
-  border-left:3px solid var(--vermilion); padding-left:14px; color:var(--ink-500);
-  margin:8px 0;
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
 }
-.msg.loading { color:var(--ink-300); font-style:italic; }
-/* ── Input Area ─────── */
+
+.message.assistant {
+  align-self: flex-start;
+}
+
+.message .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.message.user .avatar {
+  background: linear-gradient(135deg, var(--vermilion), #d47a6b);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(196, 69, 54, 0.2);
+}
+
+.message.assistant .avatar {
+  background: linear-gradient(135deg, #8c8273, #a09585);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(108, 101, 85, 0.15);
+}
+
+.message .bubble {
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.78;
+  word-break: break-word;
+  position: relative;
+}
+
+.message.user .bubble {
+  background: var(--vermilion);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 4px 16px rgba(196, 69, 54, 0.22);
+}
+
+.message.assistant .bubble {
+  background: var(--surface);
+  color: var(--ink-900);
+  border-bottom-left-radius: 6px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(229, 224, 213, 0.5);
+}
+
+/* ── Markdown content inside bubbles ───────────────────────── */
+
+.message .bubble p { margin: 5px 0; }
+.message .bubble p:first-child { margin-top: 0; }
+.message .bubble p:last-child { margin-bottom: 0; }
+
+.message .bubble ul,
+.message .bubble ol {
+  padding-left: 24px;
+  margin: 8px 0;
+}
+
+.message .bubble li { margin: 3px 0; }
+
+.message .bubble strong {
+  font-weight: 600;
+  color: var(--vermilion);
+}
+
+.message.user .bubble strong {
+  color: #ffd8d0;
+}
+
+.message .bubble em {
+  font-style: italic;
+  color: var(--ink-500);
+}
+
+.message .bubble code {
+  background: var(--paper-warm);
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--ink-700);
+}
+
+.message.user .bubble code {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message .bubble pre {
+  background: var(--paper-warm);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  border: 1px solid var(--ink-100);
+}
+
+.message .bubble pre code {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.message .bubble h1, .message .bubble h2,
+.message .bubble h3, .message .bubble h4 {
+  margin: 10px 0 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--jade);
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+}
+
+.message .bubble h1 { font-size: 1.35em; }
+.message .bubble h2 { font-size: 1.2em; }
+.message .bubble h3 { font-size: 1.08em; }
+.message .bubble h4 { font-size: 1em; }
+
+.message.user .bubble h1,
+.message.user .bubble h2,
+.message.user .bubble h3,
+.message.user .bubble h4 {
+  color: #ffe0d8;
+}
+
+.message .bubble hr {
+  border: none;
+  border-top: 1px solid var(--ink-100);
+  margin: 14px 0;
+}
+
+.message .bubble table {
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 12.5px;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.message .bubble th,
+.message .bubble td {
+  border: 1px solid var(--ink-100);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.message .bubble th {
+  background: var(--paper-warm);
+  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-700);
+}
+
+.message .bubble blockquote {
+  border-left: 3px solid var(--gold);
+  padding: 6px 14px;
+  margin: 10px 0;
+  background: var(--gold-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--ink-700);
+  font-size: 13.5px;
+}
+
+/* ── Streaming cursor ──────────────────────────────────────── */
+
+.message .bubble.streaming::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--vermilion);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 0.75s step-end infinite;
+}
+
+.message.user .bubble.streaming::after {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Typing indicator ──────────────────────────────────────── */
+
+.message .bubble.typing {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 22px;
+}
+
+.message .bubble.typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-200);
+  animation: dotBounce 1.4s ease-in-out infinite;
+}
+
+.message .bubble.typing span:nth-child(2) { animation-delay: 0.16s; }
+.message .bubble.typing span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-5px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Input Area
+   ═══════════════════════════════════════════════════════════════ */
+
 .input-area {
-  display:flex; gap:10px; padding:16px 0; border-top:1px solid var(--ink-100);
-  position:sticky; bottom:0; background:var(--paper);
+  padding: 18px 28px 22px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  position: relative;
 }
-.input-area input {
-  flex:1; padding:12px 18px; border:1.5px solid var(--ink-200);
-  border-radius:var(--radius-lg); font-size:0.92rem; font-family:inherit;
-  background:var(--surface); outline:none;
-  transition:border-color .2s var(--ease-out);
+
+/* Subtle top gradient instead of hard border */
+.input-area::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ink-100) 20%,
+    var(--ink-100) 80%,
+    transparent 100%
+  );
 }
-.input-area input:focus { border-color:var(--vermilion); }
-.input-area button {
-  padding:12px 24px; background:var(--jade); color:#fff; border:none;
-  border-radius:var(--radius-lg); cursor:pointer; font-size:0.92rem;
-  font-family:inherit; font-weight:500; transition:all .2s var(--ease-out);
+
+.input-area textarea {
+  flex: 1;
+  padding: 13px 18px;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: var(--font-body);
+  line-height: 1.55;
+  resize: none;
+  outline: none;
+  max-height: 140px;
+  background: var(--surface);
+  color: var(--ink-900);
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-xs);
 }
-.input-area button:hover { opacity:0.85; }
-.input-area button:disabled { opacity:0.4; cursor:not-allowed; }
-/* ── Responsive ─────── */
-@media (max-width:600px) {
-  main { padding:16px; }
-  .form-grid { grid-template-columns:1fr; }
-  .msg { max-width:92%; }
+
+.input-area textarea:focus {
+  border-color: var(--vermilion);
+  background: #fff;
+  box-shadow: 0 0 0 5px var(--vermilion-glow), var(--shadow-sm);
+}
+
+.input-area textarea::placeholder {
+  color: var(--ink-200);
+  font-weight: 300;
+}
+
+.input-area .send-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: none;
+  background: var(--vermilion);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 4px 14px rgba(196, 69, 54, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.input-area .send-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.input-area .send-btn:hover {
+  background: var(--vermilion-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(196, 69, 54, 0.38);
+}
+
+.input-area .send-btn:hover::after { opacity: 1; }
+
+.input-area .send-btn:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 2px 8px rgba(196, 69, 54, 0.2);
+}
+
+.input-area .send-btn:disabled {
+  background: var(--ink-200);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.input-area .send-btn:disabled::after { display: none; }
+
+/* Send button arrow icon */
+.input-area .send-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Welcome Screen
+   ═══════════════════════════════════════════════════════════════ */
+
+.welcome {
+  text-align: center;
+  padding: 72px 24px 48px;
+  animation: welcomeReveal 0.7s var(--ease-out) both;
+}
+
+@keyframes welcomeReveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.welcome .w-mark {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 28px;
+  background: linear-gradient(135deg, var(--vermilion), #d47a6b);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(196, 69, 54, 0.25);
+  animation: markFloat 4s ease-in-out infinite;
+}
+
+@keyframes markFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.welcome h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.welcome .w-desc {
+  font-size: 14px;
+  color: var(--ink-500);
+  margin-bottom: 36px;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+
+.welcome .hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.welcome .hint {
+  padding: 10px 22px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink-100);
+  border-radius: var(--radius-full);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  color: var(--ink-500);
+  font-weight: 400;
+  opacity: 0;
+  animation: hintReveal 0.5s var(--ease-out) forwards;
+  letter-spacing: 0.02em;
+}
+
+.welcome .hint:nth-child(1) { animation-delay: 0.15s; }
+.welcome .hint:nth-child(2) { animation-delay: 0.25s; }
+.welcome .hint:nth-child(3) { animation-delay: 0.35s; }
+.welcome .hint:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes hintReveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.welcome .hint:hover {
+  border-color: var(--vermilion);
+  color: var(--vermilion);
+  background: var(--vermilion-soft);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--vermilion-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Toast Notifications
+   ═══════════════════════════════════════════════════════════════ */
+
+.toast {
+  position: fixed;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  z-index: 100;
+  letter-spacing: 0.03em;
+  animation: toastEnter 0.35s var(--ease-out) both,
+             toastExit 0.3s var(--ease-in-out) 2.2s forwards;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
+}
+
+@keyframes toastEnter {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@keyframes toastExit {
+  from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.95); }
+}
+
+.toast.success { background: #3d8c5e; }
+.toast.error   { background: var(--vermilion); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile — Hamburger & responsive
+   ═══════════════════════════════════════════════════════════════ */
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #ddd6c8;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color var(--duration-fast);
+}
+
+.hamburger:hover { color: #fff; }
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hamburger { display: block; }
+
+  .sidebar {
+    position: fixed;
+    left: -320px;
+    top: 56px;
+    bottom: 0;
+    z-index: 30;
+    width: 300px;
+    min-width: 300px;
+    transition: left 0.35s var(--ease-out);
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    left: 0;
+    box-shadow: 8px 0 40px rgba(26, 24, 20, 0.2);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 56px;
+    background: rgba(26, 24, 20, 0.3);
+    z-index: 25;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease-out);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .message { max-width: 88%; }
+  .messages { padding: 20px 16px; gap: 18px; }
+  .input-area { padding: 14px 16px 18px; }
+  .input-area::before { left: 16px; right: 16px; }
+
+  .welcome { padding: 48px 16px 32px; }
+  .welcome h2 { font-size: 22px; }
+  .welcome .w-mark { width: 60px; height: 60px; font-size: 28px; border-radius: 16px; }
+
+  header { padding: 0 16px; }
+  header .brand-text { font-size: 15px; }
+  header .status-indicator span:last-child { display: none; }
+}
+
+@media (max-width: 480px) {
+  .message { max-width: 94%; }
+  .messages { padding: 16px 10px; gap: 14px; }
+  .message .bubble { padding: 12px 15px; font-size: 13.5px; }
+  .input-area { padding: 10px 10px 14px; gap: 8px; }
+  .input-area textarea { padding: 11px 14px; font-size: 13px; }
+  .welcome { padding: 36px 12px 24px; }
+  .welcome h2 { font-size: 20px; }
+  .welcome .hint { padding: 8px 16px; font-size: 12.5px; }
+  .sidebar { width: 280px; min-width: 280px; left: -290px; }
 }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>深圳五险一金智能助手</h1>
-  <button class="profile-badge" id="profileBtn" onclick="showProfile()">填写个人信息</button>
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="菜单">&#9776;</button>
+  <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+  <span class="brand-text">深圳五险一金智能助手</span>
+  <div class="status-indicator">
+    <span class="status-dot"></span>
+    <span>在线服务</span>
+  </div>
 </header>
 
-<main>
-  <!-- Profile Form -->
-  <div class="profile-form active" id="profileForm">
-    <h2>请先填写您的个人信息</h2>
-    <div class="form-grid">
-      <div class="form-group">
+<div class="layout">
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>我的信息</h3>
+      <p class="subtitle">完善信息以获得精准计算结果</p>
+    </div>
+
+    <div class="sidebar-body">
+      <div class="profile-view" id="profileView"></div>
+      <div class="profile-edit" id="profileEdit">
         <label>就业状态</label>
-        <select id="f_employment_status">
-          <option value="在职">在职</option>
+        <select id="editEmployment">
+          <option value="">请选择</option>
+          <option value="在职">在职职工</option>
           <option value="灵活就业">灵活就业</option>
+          <option value="退休">已退休</option>
           <option value="失业">失业</option>
-          <option value="退休">退休</option>
         </select>
-      </div>
-      <div class="form-group">
+
         <label>户籍类型</label>
-        <select id="f_household_type">
+        <select id="editHousehold">
+          <option value="">请选择</option>
           <option value="深户">深户</option>
           <option value="非深户">非深户</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>医保档次</label>
-        <select id="f_medical_level">
-          <option value="一档">一档</option>
-          <option value="二档">二档</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>月工资（元）</label>
-        <input type="number" id="f_monthly_salary" placeholder="如 15000" min="0">
-      </div>
-      <div class="form-group">
-        <label>年龄</label>
-        <input type="number" id="f_age" placeholder="如 35" min="18" max="70">
-      </div>
-      <div class="form-group">
+
         <label>性别</label>
-        <select id="f_gender">
+        <select id="editGender">
           <option value="">请选择</option>
           <option value="男">男</option>
           <option value="女">女</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>累计缴费年限</label>
-        <input type="number" id="f_cumulative_years" placeholder="如 10" min="0" max="50" step="0.5">
-      </div>
-      <div class="form-group">
-        <label>公积金缴存比例</label>
-        <select id="f_housing_fund_rate">
-          <option value="0">未缴公积金</option>
-          <option value="0.05">5%</option>
-          <option value="0.07" selected>7%</option>
-          <option value="0.08">8%</option>
-          <option value="0.10">10%</option>
-          <option value="0.12">12%</option>
-        </select>
-      </div>
-    </div>
-    <div class="btn-submit-wrapper">
-      <button class="btn btn-primary" onclick="saveProfile()">开始咨询</button>
-    </div>
-  </div>
 
-  <!-- Chat Area -->
-  <div class="chat-area" id="chatArea">
-    <div class="messages" id="messages"></div>
-    <div class="input-area">
-      <input type="text" id="msgInput" placeholder="输入您的问题..." onkeydown="if(event.key==='Enter')sendMsg()">
-      <button id="sendBtn" onclick="sendMsg()">发送</button>
+        <label>年龄（岁）</label>
+        <input type="number" id="editAge" min="18" max="70" placeholder="例如：30">
+
+        <label>月工资（元）</label>
+        <input type="number" id="editSalary" min="0" step="100" placeholder="例如：8000">
+
+        <label>医保档次</label>
+        <select id="editMedical">
+          <option value="">请选择</option>
+          <option value="一档">一档</option>
+          <option value="二档">二档</option>
+        </select>
+
+        <label>累计缴费年限（年）</label>
+        <input type="number" id="editYears" min="0" max="50" step="1" placeholder="例如：5">
+
+        <label>公积金缴存比例（5%–12%）</label>
+        <input type="number" id="editRate" min="5" max="12" step="1" placeholder="例如：5">
+
+        <div class="sidebar-actions" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="saveProfile()">保存信息</button>
+          <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
+        </div>
+      </div>
     </div>
-  </div>
-</main>
+
+    <div class="sidebar-footer">
+      <button class="btn btn-outline btn-sm btn-block" id="editBtn" onclick="startEdit()">
+        &#x270E; 编辑个人信息
+      </button>
+      <button class="btn btn-ghost btn-sm btn-block" onclick="clearHistory()">
+        重置对话记录
+      </button>
+    </div>
+  </aside>
+
+  <main class="chat">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="w-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h2>您好，我是您的五险一金咨询助手</h2>
+        <p class="w-desc">基于深圳市最新政策法规，为您提供个性化精准咨询服务</p>
+        <div class="hints">
+          <span class="hint" onclick="sendHint(this)">我要交多少社保</span>
+          <span class="hint" onclick="sendHint(this)">公积金怎么提取</span>
+          <span class="hint" onclick="sendHint(this)">医保一档二档区别</span>
+          <span class="hint" onclick="sendHint(this)">我能拿多少养老金</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="input" rows="1" placeholder="输入您的问题，Enter 发送…" onkeydown="onKeydown(event)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="send()" title="发送消息" aria-label="发送">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+      </button>
+    </div>
+  </main>
+</div>
 
 <script>
-// ── 配置 ──
-const API_BASE = window.location.origin;
+// ═══════════════════════════════════════════════════════════════
+// Markdown Rendering
+// ═══════════════════════════════════════════════════════════════
 
-// ── 状态（仅在 JS 内存中，关闭页面即清空） ──
-let profile = null;
-let history = [];
-let isStreaming = false;
-
-// ── Profile ──────────────────────────────────────────
-function saveProfile() {
-  const form = {
-    employment_status: d('f_employment_status').value,
-    household_type: d('f_household_type').value,
-    medical_level: d('f_medical_level').value,
-    monthly_salary: parseFloat(d('f_monthly_salary').value) || 0,
-    age: parseInt(d('f_age').value) || 0,
-    gender: d('f_gender').value,
-    cumulative_years: parseFloat(d('f_cumulative_years').value) || 0,
-    housing_fund_rate: parseFloat(d('f_housing_fund_rate').value) || 0,
-  };
-  profile = form;
-  history = [];
-  d('profileForm').classList.remove('active');
-  d('chatArea').classList.add('active');
-  d('profileBtn').textContent = '清空信息';
-  d('messages').innerHTML = '';
-  d('msgInput').focus();
-}
-
-function showProfile() {
-  if (profile) {
-    if (confirm('清空个人信息并重新填写？对话历史也会清空。')) {
-      resetAll();
-      return;
-    }
+function renderMarkdown(text) {
+  if (!text) return '';
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({ breaks: true, gfm: true });
+    return marked.parse(text);
   }
-  d('profileForm').classList.add('active');
-  d('chatArea').classList.remove('active');
-  profile = null;
-  history = [];
-  d('profileBtn').textContent = '填写个人信息';
+  return fallbackMarkdown(text);
 }
 
-function resetAll() {
-  profile = null;
-  history = [];
-  d('profileForm').classList.add('active');
-  d('chatArea').classList.remove('active');
-  d('profileBtn').textContent = '填写个人信息';
-  d('messages').innerHTML = '';
+function fallbackMarkdown(text) {
+  var html = text;
+  html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, function(_, lang, code) {
+    return '<pre><code>' + escapeHtml(code.trim()) + '</code></pre>';
+  });
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/^#### (.+)/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.+)/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)/gm, '<h1>$1</h1>');
+  html = html.replace(/^[\-\*] (.+)/gm, '<li>$1</li>');
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+  html = html.replace(/^\d+\. (.+)/gm, '<li>$1</li>');
+  html = html.replace(/^\-{3,}$/gm, '<hr>');
+  html = html.replace(/((?:^\|.+\|\n?)+)/gm, function(match) {
+    var lines = match.trim().split('\n');
+    if (lines.length < 2) return match;
+    var rows = lines.filter(function(l) { return !/^\|[\s\-:]+\|$/.test(l); });
+    var table = '<table>';
+    rows.forEach(function(row, i) {
+      var cells = row.split('|').filter(function(c) { return c.trim() !== ''; });
+      var tag = i === 0 ? 'th' : 'td';
+      table += '<tr>' + cells.map(function(c) { return '<' + tag + '>' + c.trim() + '</' + tag + '>'; }).join('') + '</tr>';
+    });
+    table += '</table>';
+    return table;
+  });
+  html = html.replace(/\n{2,}/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>(<(?:h[1-4]|ul|ol|table|pre|hr|blockquote)[\s\S]*?<\/\1>)<\/p>/g, '$1');
+  return html;
 }
 
-// ── Chat ─────────────────────────────────────────────
-async function sendMsg() {
-  if (!profile) { showProfile(); return; }
-  if (isStreaming) return;
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-  const input = d('msgInput');
-  const msg = input.value.trim();
+// ═══════════════════════════════════════════════════════════════
+// App State — 画像仅在 JS 内存，关闭页面即清空
+// ═══════════════════════════════════════════════════════════════
+
+var currentProfile = {};
+var history = [];
+var streaming = false;
+
+(function init() {
+  renderProfile();
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// Profile Management (纯前端，无服务端存储)
+// ═══════════════════════════════════════════════════════════════
+
+function renderProfile() {
+  var view = document.getElementById('profileView');
+  var labels = {
+    employment_status: '就业状态',
+    household_type: '户籍类型',
+    gender: '性别',
+    age: '年龄',
+    monthly_salary: '月工资',
+    medical_level: '医保档次',
+    cumulative_years: '累计缴费',
+    housing_fund_rate: '公积金比例'
+  };
+
+  function fmt(k, v) {
+    if (!v && v !== 0) return '<span class="empty">未设置</span>';
+    if (k === 'monthly_salary') return Number(v).toLocaleString() + ' 元';
+    if (k === 'age') return v + ' 岁';
+    if (k === 'cumulative_years') return v + ' 年';
+    if (k === 'housing_fund_rate') return (Number(v) * 100).toFixed(0) + '%';
+    return v;
+  }
+
+  var html = '';
+  Object.keys(labels).forEach(function(k) {
+    html += '<div class="field"><span class="label">' + labels[k] + '</span><span class="value">' + fmt(k, currentProfile[k]) + '</span></div>';
+  });
+  view.innerHTML = html;
+}
+
+function startEdit() {
+  var p = currentProfile;
+  document.getElementById('editEmployment').value = p.employment_status || '';
+  document.getElementById('editHousehold').value = p.household_type || '';
+  document.getElementById('editGender').value = p.gender || '';
+  document.getElementById('editAge').value = p.age || '';
+  document.getElementById('editSalary').value = p.monthly_salary || '';
+  document.getElementById('editMedical').value = p.medical_level || '';
+  document.getElementById('editYears').value = p.cumulative_years || '';
+  document.getElementById('editRate').value = p.housing_fund_rate ? Math.round(p.housing_fund_rate * 100) : '';
+
+  document.getElementById('profileView').style.display = 'none';
+  document.getElementById('profileEdit').classList.add('active');
+  document.getElementById('editBtn').style.display = 'none';
+}
+
+function cancelEdit() {
+  document.getElementById('profileView').style.display = '';
+  document.getElementById('profileEdit').classList.remove('active');
+  document.getElementById('editBtn').style.display = '';
+}
+
+function saveProfile() {
+  var rateRaw = parseFloat(document.getElementById('editRate').value);
+  currentProfile = {
+    employment_status: document.getElementById('editEmployment').value,
+    household_type: document.getElementById('editHousehold').value,
+    gender: document.getElementById('editGender').value,
+    age: parseInt(document.getElementById('editAge').value) || 0,
+    monthly_salary: parseFloat(document.getElementById('editSalary').value) || 0,
+    medical_level: document.getElementById('editMedical').value,
+    cumulative_years: parseFloat(document.getElementById('editYears').value) || 0,
+    housing_fund_rate: rateRaw > 1 ? rateRaw / 100 : rateRaw
+  };
+  renderProfile();
+  cancelEdit();
+  toast('个人信息已更新', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Sidebar Toggle (Mobile)
+// ═══════════════════════════════════════════════════════════════
+
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('active');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Chat
+// ═══════════════════════════════════════════════════════════════
+
+function sendHint(el) {
+  document.getElementById('input').value = el.textContent;
+  send();
+}
+
+function onKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+}
+
+function send() {
+  if (streaming) return;
+  var input = document.getElementById('input');
+  var msg = input.value.trim();
   if (!msg) return;
-
   input.value = '';
-  input.disabled = true;
-  d('sendBtn').disabled = true;
-  isStreaming = true;
+  input.style.height = 'auto';
 
-  appendMsg('user', msg);
+  var welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  addMessage('user', msg);
   history.push({ role: 'user', content: msg });
 
-  const aiMsg = appendMsg('assistant', '', true);
+  var asst = addMessage('assistant', '', true);
+  var fullText = '';
+  var firstToken = true;
+  var renderPending = false;
+  var reader = null;
+  var aborted = false;
+  var timer = null;
 
-  try {
-    const resp = await fetch(`${API_BASE}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, profile, history: history.slice(0, -1) }),
-    });
+  streaming = true;
+  document.getElementById('sendBtn').disabled = true;
 
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let fullAnswer = '';
-    let buffer = '';
+  // 60 秒超时保护
+  timer = setTimeout(function() {
+    aborted = true;
+    if (reader) { try { reader.cancel(); } catch(e) {} }
+    finishMessage(asst, fullText || '请求超时，请重试。');
+  }, 60000);
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const payload = line.slice(6);
-        try {
-          const data = JSON.parse(payload);
-          if (data.token) {
-            fullAnswer += data.token;
-            aiMsg.innerHTML = marked.parse(fullAnswer) + '<span class="cursor">|</span>';
-            d('messages').scrollTop = d('messages').scrollHeight;
-          } else if (data.done) {
-            fullAnswer = data.full_answer || fullAnswer;
-          } else if (data.error) {
-            fullAnswer = '错误：' + data.error;
-          }
-        } catch (e) { /* skip unparseable */ }
-      }
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg, profile: currentProfile, history: history.slice(0, -1) })
+  }).then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    reader = r.body.getReader();
+    var decoder = new TextDecoder();
+    var buf = '';
+
+    function pump() {
+      reader.read().then(function(result) {
+        if (result.done) {
+          clearTimeout(timer);
+          finishMessage(asst, fullText);
+          return;
+        }
+
+        buf += decoder.decode(result.value, { stream: true });
+        var lines = buf.split('\n');
+        buf = lines.pop() || '';
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf('data: ') !== 0) continue;
+          var data = line.slice(6);
+          try {
+            var parsed = JSON.parse(data);
+            if (parsed.token) {
+              if (firstToken) {
+                firstToken = false;
+                var bubble = asst.querySelector('.bubble');
+                bubble.classList.remove('typing');
+              }
+              fullText += parsed.token;
+              if (!renderPending) {
+                renderPending = true;
+                var b = asst.querySelector('.bubble');
+                b.classList.add('streaming');
+                requestAnimationFrame(function() {
+                  b.innerHTML = renderMarkdown(fullText);
+                  scrollToBottom();
+                  renderPending = false;
+                });
+              }
+            } else if (parsed.done) {
+              fullText = parsed.full_answer || fullText;
+            } else if (parsed.error) {
+              fullText += '\n\n⚠ ' + parsed.error;
+            }
+          } catch (_) {}
+        }
+        pump();
+      }).catch(function(e) {
+        clearTimeout(timer);
+        if (!aborted) finishMessage(asst, fullText || '读取响应出错: ' + e.message);
+      });
     }
 
-    aiMsg.innerHTML = marked.parse(fullAnswer);
-    aiMsg.classList.remove('loading');
-    history.push({ role: 'assistant', content: fullAnswer });
-  } catch (e) {
-    aiMsg.innerHTML = '网络错误：' + e.message;
-    aiMsg.classList.remove('loading');
-  }
+    pump();
+  }).catch(function(e) {
+    clearTimeout(timer);
+    finishMessage(asst, '网络错误：' + e.message);
+  });
 
-  input.disabled = false;
-  d('sendBtn').disabled = false;
-  isStreaming = false;
-  d('msgInput').focus();
-  d('messages').scrollTop = d('messages').scrollHeight;
+  function finishMessage(el, text) {
+    clearTimeout(timer);
+    if (aborted) return;
+    var bubble = el.querySelector('.bubble');
+    bubble.classList.remove('streaming', 'typing');
+    if (text) {
+      bubble.innerHTML = renderMarkdown(text);
+      history.push({ role: 'assistant', content: text });
+    } else {
+      bubble.textContent = '抱歉，暂时无法回答这个问题。';
+    }
+    streaming = false;
+    document.getElementById('sendBtn').disabled = false;
+    scrollToBottom();
+  }
 }
 
-function appendMsg(role, content, isLoading) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + role;
-  if (isLoading) { div.classList.add('loading'); div.textContent = '思考中...'; }
-  else { div.innerHTML = role === 'assistant' ? marked.parse(content) : content; }
-  d('messages').appendChild(div);
-  d('messages').scrollTop = d('messages').scrollHeight;
+function addMessage(role, text, isStreaming) {
+  var div = document.createElement('div');
+  div.className = 'message ' + role;
+
+  var bubbleContent = isStreaming
+    ? '<span></span><span></span><span></span>'
+    : escapeHtml(text);
+
+  var bubbleClass = isStreaming ? 'bubble typing' : 'bubble';
+  div.innerHTML =
+    '<div class="avatar">' + (role === 'user'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>') + '</div>' +
+    '<div class="' + bubbleClass + '">' + bubbleContent + '</div>';
+
+  document.getElementById('messages').appendChild(div);
+  scrollToBottom();
   return div;
 }
 
-function d(id) { return document.getElementById(id); }
+function scrollToBottom() {
+  var el = document.getElementById('messages');
+  setTimeout(function() { el.scrollTop = el.scrollHeight; }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Utilities
+// ═══════════════════════════════════════════════════════════════
+
+function clearHistory() {
+  if (!confirm('确定要清除对话历史和用户信息吗？此操作不可撤销。')) return;
+
+  currentProfile = {};
+  history = [];
+  renderProfile();
+  document.getElementById('messages').innerHTML =
+    '<div class="welcome" id="welcome">' +
+      '<div class="w-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>' +
+      '<h2>您好，我是您的五险一金咨询助手</h2>' +
+      '<p class="w-desc">基于深圳市最新政策法规，为您提供个性化精准咨询服务</p>' +
+      '<div class="hints">' +
+        '<span class="hint" onclick="sendHint(this)">我要交多少社保</span>' +
+        '<span class="hint" onclick="sendHint(this)">公积金怎么提取</span>' +
+        '<span class="hint" onclick="sendHint(this)">医保一档二档区别</span>' +
+        '<span class="hint" onclick="sendHint(this)">我能拿多少养老金</span>' +
+      '</div>' +
+    '</div>';
+  toast('对话已重置', 'success');
+}
+
+function toast(msg, type) {
+  var el = document.createElement('div');
+  el.className = 'toast ' + (type || 'success');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function() {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }, 2800);
+}
+
+// ── Auto-resize textarea ─────────────────────────────────────
+
+document.getElementById('input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+});
+
+// ── Close sidebar on outside click (mobile) ──────────────────
+
+document.addEventListener('click', function(e) {
+  var sidebar = document.getElementById('sidebar');
+  if (sidebar.classList.contains('open') &&
+      !sidebar.contains(e.target) &&
+      !e.target.classList.contains('hamburger')) {
+    closeSidebar();
+  }
+});
 </script>
 </body>
 </html>
