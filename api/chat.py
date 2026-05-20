@@ -128,7 +128,16 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             content_length = int(self.headers.get('Content-Length', 0))
-            body = json.loads(self.rfile.read(content_length)) if content_length else {}
+            if not content_length:
+                self._json_error(400, "empty body")
+                return
+
+            raw_body = self.rfile.read(content_length)
+            try:
+                body = json.loads(raw_body.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                self._json_error(400, f"Invalid JSON: {e}")
+                return
 
             message = body.get("message", "").strip()
             if not message:
