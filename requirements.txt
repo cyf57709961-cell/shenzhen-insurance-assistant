@@ -1,0 +1,4 @@
+sentence-transformers>=2.7.0
+torch>=2.1.0
+jieba>=0.42.1
+chromadb>=0.4.22

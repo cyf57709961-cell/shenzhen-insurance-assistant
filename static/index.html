@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深圳五险一金智能助手</title>
+<script src="https://unpkg.com/marked@9.1.6/marked.min.js"></script>
+<style>
+:root {
+  --ink-900: #1a1814; --ink-700: #3d3930; --ink-500: #6b6559;
+  --ink-300: #a0998c; --ink-100: #e5e0d5;
+  --paper: #faf8f4; --surface: #fffdf8;
+  --vermilion: #c44536; --jade: #3d6b64; --gold: #b8923e;
+  --radius-md: 14px; --radius-lg: 22px;
+  --shadow-md: 0 4px 20px rgba(26,24,20,.08);
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:16px; -webkit-font-smoothing:antialiased; }
+body {
+  font-family:var(--font-body); background:var(--paper); color:var(--ink-900);
+  min-height:100vh; display:flex; flex-direction:column; line-height:1.6;
+}
+/* ── Header ─────────── */
+header {
+  background:var(--surface); border-bottom:1px solid var(--ink-100);
+  padding:16px 24px; display:flex; justify-content:space-between; align-items:center;
+  box-shadow:var(--shadow-md); position:sticky; top:0; z-index:10;
+}
+header h1 { font-size:1.15rem; font-weight:600; color:var(--vermilion); }
+header .profile-badge {
+  font-size:0.8rem; color:var(--ink-500); background:var(--ink-100);
+  padding:4px 14px; border-radius:999px; cursor:pointer; border:none;
+  font-family:inherit; transition:all .2s var(--ease-out);
+}
+header .profile-badge:hover { background:var(--vermilion); color:#fff; }
+/* ── Main ─────────── */
+main {
+  flex:1; max-width:800px; width:100%; margin:0 auto; padding:24px;
+  display:flex; flex-direction:column;
+}
+/* ── Profile Form ──── */
+.profile-form { display:none; }
+.profile-form.active { display:block; }
+.profile-form h2 {
+  font-size:1.3rem; margin-bottom:24px; color:var(--ink-700);
+  text-align:center;
+}
+.form-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+  gap:16px; margin-bottom:24px;
+}
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group label {
+  font-size:0.8rem; font-weight:500; color:var(--ink-500);
+}
+.form-group input, .form-group select {
+  padding:10px 14px; border:1.5px solid var(--ink-200); border-radius:var(--radius-md);
+  font-size:0.9rem; font-family:inherit; background:var(--surface);
+  color:var(--ink-900); transition:border-color .2s var(--ease-out);
+  outline:none;
+}
+.form-group input:focus, .form-group select:focus { border-color:var(--vermilion); }
+.form-hint { font-size:0.7rem; color:var(--ink-300); }
+.btn {
+  padding:12px 32px; border:none; border-radius:var(--radius-lg); cursor:pointer;
+  font-size:0.95rem; font-weight:500; font-family:inherit;
+  transition:all .2s var(--ease-out);
+}
+.btn-primary { background:var(--vermilion); color:#fff; }
+.btn-primary:hover { background:#a8382b; }
+.btn-submit-wrapper { text-align:center; margin-top:8px; }
+/* ── Chat Area ──────── */
+.chat-area { display:none; flex:1; flex-direction:column; }
+.chat-area.active { display:flex; }
+.messages {
+  flex:1; overflow-y:auto; padding:8px 0; display:flex; flex-direction:column; gap:16px;
+}
+.msg { max-width:85%; padding:12px 18px; border-radius:var(--radius-lg); font-size:0.92rem; line-height:1.65; }
+.msg.user {
+  align-self:flex-end; background:var(--ink-100); color:var(--ink-900);
+  border-bottom-right-radius:4px;
+}
+.msg.assistant {
+  align-self:flex-start; background:var(--surface); color:var(--ink-900);
+  border:1px solid var(--ink-100); border-bottom-left-radius:4px;
+}
+.msg.assistant p { margin:0.4em 0; }
+.msg.assistant p:first-child { margin-top:0; }
+.msg.assistant p:last-child { margin-bottom:0; }
+.msg.assistant table { border-collapse:collapse; margin:8px 0; font-size:0.85rem; width:100%; }
+.msg.assistant th, .msg.assistant td { border:1px solid var(--ink-200); padding:6px 10px; text-align:left; }
+.msg.assistant th { background:var(--ink-100); }
+.msg.assistant strong { color:var(--vermilion); }
+.msg.assistant blockquote {
+  border-left:3px solid var(--vermilion); padding-left:14px; color:var(--ink-500);
+  margin:8px 0;
+}
+.msg.loading { color:var(--ink-300); font-style:italic; }
+/* ── Input Area ─────── */
+.input-area {
+  display:flex; gap:10px; padding:16px 0; border-top:1px solid var(--ink-100);
+  position:sticky; bottom:0; background:var(--paper);
+}
+.input-area input {
+  flex:1; padding:12px 18px; border:1.5px solid var(--ink-200);
+  border-radius:var(--radius-lg); font-size:0.92rem; font-family:inherit;
+  background:var(--surface); outline:none;
+  transition:border-color .2s var(--ease-out);
+}
+.input-area input:focus { border-color:var(--vermilion); }
+.input-area button {
+  padding:12px 24px; background:var(--jade); color:#fff; border:none;
+  border-radius:var(--radius-lg); cursor:pointer; font-size:0.92rem;
+  font-family:inherit; font-weight:500; transition:all .2s var(--ease-out);
+}
+.input-area button:hover { opacity:0.85; }
+.input-area button:disabled { opacity:0.4; cursor:not-allowed; }
+/* ── Responsive ─────── */
+@media (max-width:600px) {
+  main { padding:16px; }
+  .form-grid { grid-template-columns:1fr; }
+  .msg { max-width:92%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>深圳五险一金智能助手</h1>
+  <button class="profile-badge" id="profileBtn" onclick="showProfile()">填写个人信息</button>
+</header>
+
+<main>
+  <!-- Profile Form -->
+  <div class="profile-form active" id="profileForm">
+    <h2>请先填写您的个人信息</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>就业状态</label>
+        <select id="f_employment_status">
+          <option value="在职">在职</option>
+          <option value="灵活就业">灵活就业</option>
+          <option value="失业">失业</option>
+          <option value="退休">退休</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>户籍类型</label>
+        <select id="f_household_type">
+          <option value="深户">深户</option>
+          <option value="非深户">非深户</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>医保档次</label>
+        <select id="f_medical_level">
+          <option value="一档">一档</option>
+          <option value="二档">二档</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>月工资（元）</label>
+        <input type="number" id="f_monthly_salary" placeholder="如 15000" min="0">
+      </div>
+      <div class="form-group">
+        <label>年龄</label>
+        <input type="number" id="f_age" placeholder="如 35" min="18" max="70">
+      </div>
+      <div class="form-group">
+        <label>性别</label>
+        <select id="f_gender">
+          <option value="">请选择</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>累计缴费年限</label>
+        <input type="number" id="f_cumulative_years" placeholder="如 10" min="0" max="50" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>公积金缴存比例</label>
+        <select id="f_housing_fund_rate">
+          <option value="0">未缴公积金</option>
+          <option value="0.05">5%</option>
+          <option value="0.07" selected>7%</option>
+          <option value="0.08">8%</option>
+          <option value="0.10">10%</option>
+          <option value="0.12">12%</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-submit-wrapper">
+      <button class="btn btn-primary" onclick="saveProfile()">开始咨询</button>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="msgInput" placeholder="输入您的问题..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button id="sendBtn" onclick="sendMsg()">发送</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── 配置 ──
+const API_BASE = window.location.origin;
+
+// ── 状态（仅在 JS 内存中，关闭页面即清空） ──
+let profile = null;
+let history = [];
+let isStreaming = false;
+
+// ── Profile ──────────────────────────────────────────
+function saveProfile() {
+  const form = {
+    employment_status: d('f_employment_status').value,
+    household_type: d('f_household_type').value,
+    medical_level: d('f_medical_level').value,
+    monthly_salary: parseFloat(d('f_monthly_salary').value) || 0,
+    age: parseInt(d('f_age').value) || 0,
+    gender: d('f_gender').value,
+    cumulative_years: parseFloat(d('f_cumulative_years').value) || 0,
+    housing_fund_rate: parseFloat(d('f_housing_fund_rate').value) || 0,
+  };
+  profile = form;
+  history = [];
+  d('profileForm').classList.remove('active');
+  d('chatArea').classList.add('active');
+  d('profileBtn').textContent = '清空信息';
+  d('messages').innerHTML = '';
+  d('msgInput').focus();
+}
+
+function showProfile() {
+  if (profile) {
+    if (confirm('清空个人信息并重新填写？对话历史也会清空。')) {
+      resetAll();
+      return;
+    }
+  }
+  d('profileForm').classList.add('active');
+  d('chatArea').classList.remove('active');
+  profile = null;
+  history = [];
+  d('profileBtn').textContent = '填写个人信息';
+}
+
+function resetAll() {
+  profile = null;
+  history = [];
+  d('profileForm').classList.add('active');
+  d('chatArea').classList.remove('active');
+  d('profileBtn').textContent = '填写个人信息';
+  d('messages').innerHTML = '';
+}
+
+// ── Chat ─────────────────────────────────────────────
+async function sendMsg() {
+  if (!profile) { showProfile(); return; }
+  if (isStreaming) return;
+
+  const input = d('msgInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  input.disabled = true;
+  d('sendBtn').disabled = true;
+  isStreaming = true;
+
+  appendMsg('user', msg);
+  history.push({ role: 'user', content: msg });
+
+  const aiMsg = appendMsg('assistant', '', true);
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, profile, history: history.slice(0, -1) }),
+    });
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullAnswer = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6);
+        try {
+          const data = JSON.parse(payload);
+          if (data.token) {
+            fullAnswer += data.token;
+            aiMsg.innerHTML = marked.parse(fullAnswer) + '<span class="cursor">|</span>';
+            d('messages').scrollTop = d('messages').scrollHeight;
+          } else if (data.done) {
+            fullAnswer = data.full_answer || fullAnswer;
+          } else if (data.error) {
+            fullAnswer = '错误：' + data.error;
+          }
+        } catch (e) { /* skip unparseable */ }
+      }
+    }
+
+    aiMsg.innerHTML = marked.parse(fullAnswer);
+    aiMsg.classList.remove('loading');
+    history.push({ role: 'assistant', content: fullAnswer });
+  } catch (e) {
+    aiMsg.innerHTML = '网络错误：' + e.message;
+    aiMsg.classList.remove('loading');
+  }
+
+  input.disabled = false;
+  d('sendBtn').disabled = false;
+  isStreaming = false;
+  d('msgInput').focus();
+  d('messages').scrollTop = d('messages').scrollHeight;
+}
+
+function appendMsg(role, content, isLoading) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (isLoading) { div.classList.add('loading'); div.textContent = '思考中...'; }
+  else { div.innerHTML = role === 'assistant' ? marked.parse(content) : content; }
+  d('messages').appendChild(div);
+  d('messages').scrollTop = d('messages').scrollHeight;
+  return div;
+}
+
+function d(id) { return document.getElementById(id); }
+</script>
+</body>
+</html>
