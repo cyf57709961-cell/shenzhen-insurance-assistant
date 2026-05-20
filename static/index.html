@@ -1212,7 +1212,7 @@ function escapeHtml(s) {
 // ═══════════════════════════════════════════════════════════════
 
 var currentProfile = {};
-var history = [];
+var chatHistory = [];
 var streaming = false;
 
 (function init() {
@@ -1335,7 +1335,7 @@ function send() {
   if (welcome) welcome.remove();
 
   addMessage('user', msg);
-  history.push({ role: 'user', content: msg });
+  chatHistory.push({ role: 'user', content: msg });
 
   var asst = addMessage('assistant', '', true);
   var fullText = '';
@@ -1358,7 +1358,7 @@ function send() {
   fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: msg, profile: currentProfile, history: history.slice(0, -1) })
+    body: JSON.stringify({ message: msg, profile: currentProfile, history: chatHistory.slice(0, -1) })
   }).then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     reader = r.body.getReader();
@@ -1427,7 +1427,7 @@ function send() {
     bubble.classList.remove('streaming', 'typing');
     if (text) {
       bubble.innerHTML = renderMarkdown(text);
-      history.push({ role: 'assistant', content: text });
+      chatHistory.push({ role: 'assistant', content: text });
     } else {
       bubble.textContent = '抱歉，暂时无法回答这个问题。';
     }
@@ -1470,7 +1470,7 @@ function clearHistory() {
   if (!confirm('确定要清除对话历史和用户信息吗？此操作不可撤销。')) return;
 
   currentProfile = {};
-  history = [];
+  chatHistory = [];
   renderProfile();
   document.getElementById('messages').innerHTML =
     '<div class="welcome" id="welcome">' +
