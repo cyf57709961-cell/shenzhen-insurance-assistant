@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Vercel serverless function — 五险一金智能助手 API
-冷启动时加载 RAG 引擎，warm start 复用
+冷启动时加载 RAG 引擎（BM25 + 预计算 embedding），warm start 复用
 """
 
 import json
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
-from rag_engine import RAGEngine, Document, EmbeddingIndex
+from rag_engine import RAGEngine, Document
 from rag import EnhancedRAG
 from memory import UserMemory
 
@@ -55,19 +55,18 @@ def _init_rag():
         engine.add_documents(docs)
         print(f"[OK] Loaded {len(docs)} documents")
 
-        # 加载预计算向量 → 灌入内存 ChromaDB
+        # 加载预计算向量 → numpy 数组
         data = np.load(emb_path, allow_pickle=False)
         ids = data["ids"].tolist()
         embeddings = data["embeddings"].tolist()
         engine.search_engine.embedding_index.populate_from_precomputed(ids, embeddings)
     else:
-        # 回退：从法律文本文件构建索引
-        print("[INFO] No pre-computed data found, building from source...")
+        # 回退：从法律文本文件构建 BM25 索引（embedding 需 API key）
+        print("[INFO] No pre-computed data found, building BM25 index from source...")
         source_files = [
             os.path.join(data_dir, "深圳市社保法律法规汇编.txt"),
             os.path.join(data_dir, "深圳市住房公积金法律法规汇编.txt"),
         ]
-        # 如果 data 目录没有，尝试根目录
         if not os.path.exists(source_files[0]):
             source_files = [
                 "深圳市社保法律法规汇编.txt",
@@ -75,14 +74,18 @@ def _init_rag():
             ]
         engine.rebuild_index(source_files, encoding='gb18030')
 
-        # 手动编码并灌入 ChromaDB
+        # 如果 ZHIPU_API_KEY 存在，编码 embedding
         child_docs = [d for d in engine.search_engine.child_docs]
         if child_docs:
             emb_idx = engine.search_engine.embedding_index
-            texts = [d.content for d in child_docs]
-            ids = [str(i) for i in range(len(child_docs))]
-            embeddings = emb_idx.encode_documents_batch(texts)
-            emb_idx.populate_from_precomputed(ids, embeddings)
+            if emb_idx._call_api(["test"]):
+                print("[INFO] Encoding embeddings via API (fallback)...")
+                texts = [d.content for d in child_docs]
+                ids = [str(i) for i in range(len(child_docs))]
+                embeddings = emb_idx.encode_documents_batch(texts)
+                emb_idx.populate_from_precomputed(ids, embeddings)
+            else:
+                print("[WARN] ZHIPU_API_KEY not set, semantic search disabled (BM25 only)")
 
     print(f"[OK] RAG engine ready ({engine.get_stats()})")
     return _rag

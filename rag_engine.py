@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-RAG 引擎 — 混合检索（Vercel 版 — ChromaDB 内存模式）
+RAG 引擎 — 混合检索（Vercel 版 — BM25 + 智谱 Embedding API）
 ─────────────────────────────
 稀疏信号: BM25 (jieba 分词)     — 关键词精准匹配
 稠密信号: Dense Embedding       — 语义理解
@@ -14,6 +14,9 @@ import os
 import re
 import math
 import time
+import json
+import urllib.request
+import numpy as np
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
@@ -24,24 +27,13 @@ try:
 except ImportError:
     HAS_JIEBA = False
 
-# ── 稠密检索 ──────────────────────────────────────────────────
-try:
-    from sentence_transformers import SentenceTransformer
-    HAS_EMBEDDING = True
-except ImportError:
-    HAS_EMBEDDING = False
+# ── 稠密检索（智谱 Embedding API）─────────────────────────────
+ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY", "")
+ZHIPU_EMBEDDING_ENDPOINT = "https://open.bigmodel.cn/api/paas/v4/embeddings"
+ZHIPU_EMBEDDING_MODEL = os.getenv("ZHIPU_EMBEDDING_MODEL", "embedding-3")
 
-_BGE_LOCAL_BASE = os.getenv("BGE_MODEL_PATH", "D:/Huggingface_models")
-_BGE_SNAPSHOT_DIR = os.path.join(
-    _BGE_LOCAL_BASE, "models--BAAI--bge-small-zh-v1.5", "snapshots"
-)
-if os.path.isdir(_BGE_SNAPSHOT_DIR):
-    _snapshots = os.listdir(_BGE_SNAPSHOT_DIR)
-    EMBEDDING_MODEL_NAME = os.path.join(_BGE_SNAPSHOT_DIR, _snapshots[0]) if _snapshots else "BAAI/bge-small-zh-v1.5"
-else:
-    EMBEDDING_MODEL_NAME = "BAAI/bge-small-zh-v1.5"
-
-BGE_QUERY_PREFIX = "为这个句子生成表示以用于检索相关文章："
+HAS_EMBEDDING = bool(ZHIPU_API_KEY)
+EMBEDDING_MODEL_NAME = ZHIPU_EMBEDDING_MODEL
 
 
 @dataclass
@@ -77,14 +69,6 @@ def _tokenize(text: str) -> List[str]:
 def _tokenize_joined(text: str) -> str:
     return ' '.join(_tokenize(text))
 
-
-def _cosine_sim(a: List[float], b: List[float]) -> float:
-    if not a or not b:
-        return 0.0
-    dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
-    return dot / (na * nb) if na and nb else 0.0
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -156,135 +140,90 @@ class RRF:
 
 
 # ═══════════════════════════════════════════════════════════════
-# EmbeddingIndex — 稠密语义检索（Vercel 版：内存 ChromaDB）
+# EmbeddingIndex — 稠密语义检索（智谱 Embedding API + numpy）
 # ═══════════════════════════════════════════════════════════════
 
 class EmbeddingIndex:
-    COLLECTION_NAME = "child_documents"
 
     def __init__(self):
-        self.model = None
+        self._ids: List[str] = []
+        self._embeddings = None  # np.ndarray (n, d)
         self._ready = False
-        self._client = None
-        self._collection = None
 
-    def _get_collection(self):
-        if self._collection is not None:
-            return self._collection
+    def _call_api(self, texts: list) -> list:
+        """调用智谱 Embedding API，返回 embedding 列表"""
+        if not ZHIPU_API_KEY:
+            return []
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {ZHIPU_API_KEY}"
+        }
+        payload = {
+            "model": ZHIPU_EMBEDDING_MODEL,
+            "input": texts
+        }
         try:
-            import chromadb
-            self._client = chromadb.Client()  # 内存模式，每次冷启动重建
-            self._collection = self._client.get_or_create_collection(
-                name=self.COLLECTION_NAME,
-                metadata={"hnsw:space": "cosine"}
-            )
-            return self._collection
-        except ImportError:
-            print("[WARN] chromadb not available, dense search disabled")
-            return None
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(ZHIPU_EMBEDDING_ENDPOINT, data=data, headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=60) as response:
+                result = json.loads(response.read().decode('utf-8'))
+            return [item["embedding"] for item in sorted(result.get("data", []), key=lambda x: x.get("index", 0))]
         except Exception as e:
-            print(f"[WARN] ChromaDB init failed: {e}")
-            return None
-
-    def _load_model(self):
-        if self.model is not None:
-            return
-        if not HAS_EMBEDDING:
-            print("[WARN] sentence-transformers not available, dense search disabled")
-            return
-        try:
-            print(f"[INFO] Loading embedding model: {EMBEDDING_MODEL_NAME} ...")
-            t0 = time.time()
-            self.model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-            print(f"[OK] Model loaded in {time.time() - t0:.1f}s")
-        except Exception as e:
-            print(f"[WARN] Failed to load embedding model: {e}")
-            self.model = None
+            print(f"[WARN] Embedding API call failed: {e}")
+            return []
 
     def populate_from_precomputed(self, ids: List[str], embeddings: List[List[float]]):
-        """从预计算向量灌入 ChromaDB（避免冷启动时重新编码）"""
-        col = self._get_collection()
-        if col is None:
-            return
-        if col.count() > 0:
-            return  # 已有数据，跳过
-        col.add(ids=ids, embeddings=embeddings)
+        """从预计算向量灌入 numpy 数组"""
+        self._ids = list(ids)
+        self._embeddings = np.array(embeddings, dtype=np.float32)
         self._ready = True
-        print(f"[OK] ChromaDB loaded {col.count()} pre-computed vectors")
+        print(f"[OK] Loaded {len(self._ids)} pre-computed embeddings (dim={self._embeddings.shape[1]})")
 
     def encode_documents_batch(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
         """批量编码文档，返回向量列表（供 build_data.py 使用）"""
-        self._load_model()
-        if self.model is None:
-            return []
-        print(f"[INFO] Encoding {len(texts)} documents ...")
+        print(f"[INFO] Encoding {len(texts)} documents via API ...")
         t0 = time.time()
-        embeddings = self.model.encode(
-            texts,
-            batch_size=batch_size,
-            show_progress_bar=True,
-            normalize_embeddings=True
-        )
-        print(f"[OK] Encoding done in {time.time() - t0:.1f}s")
-        return [vec.tolist() for vec in embeddings]
+        all_embeddings = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i + batch_size]
+            embeddings = self._call_api(batch)
+            if embeddings:
+                all_embeddings.extend(embeddings)
+            if (i // batch_size + 1) % 5 == 0:
+                print(f"  ... {min(i + batch_size, len(texts))}/{len(texts)}")
+        print(f"[OK] Encoding done in {time.time() - t0:.1f}s ({len(all_embeddings)} vectors)")
+        return all_embeddings
 
     def encode_query(self, query: str) -> Optional[List[float]]:
-        self._load_model()
-        if self.model is None:
-            return None
-        vec = self.model.encode(
-            BGE_QUERY_PREFIX + query,
-            normalize_embeddings=True
-        )
-        return vec.tolist()
+        result = self._call_api([query])
+        return result[0] if result else None
 
     def encode_text(self, text: str) -> Optional[List[float]]:
-        self._load_model()
-        if self.model is None:
-            return None
-        vec = self.model.encode(
-            text[:2000],
-            normalize_embeddings=True
-        )
-        return vec.tolist()
+        return self.encode_query(text[:2000])
 
     def search(self, query: str, top_k: int = 5) -> List[Tuple[int, float]]:
-        if not self._ready:
+        if not self._ready or self._embeddings is None or len(self._ids) == 0:
             return []
-        col = self._get_collection()
-        if col is None or col.count() == 0:
-            return []
-
         qvec = self.encode_query(query)
         if qvec is None:
             return []
-
-        result = col.query(
-            query_embeddings=[qvec],
-            n_results=min(top_k, col.count()),
-            include=["distances", "metadatas"]
-        )
-
-        scores = []
-        if result["ids"] and result["ids"][0]:
-            for doc_id, distance in zip(result["ids"][0], result["distances"][0]):
-                sim = 1.0 - distance
-                if sim > 0.3:
-                    try:
-                        idx = int(doc_id)
-                        scores.append((idx, sim))
-                    except ValueError:
-                        continue
-
-        return scores[:top_k]
+        qvec = np.array(qvec, dtype=np.float32)
+        # 余弦相似度（embeddings 已归一化）
+        sims = np.dot(self._embeddings, qvec)
+        indices = np.argsort(sims)[::-1][:top_k * 2]
+        results = []
+        for i in indices:
+            sim = float(sims[i])
+            if sim > 0.3:
+                try:
+                    idx = int(self._ids[i])
+                    results.append((idx, sim))
+                except ValueError:
+                    continue
+        return results[:top_k]
 
     def is_ready(self) -> bool:
-        if self._ready:
-            return True
-        col = self._get_collection()
-        if col is not None and col.count() > 0:
-            self._ready = True
-        return self._ready
+        return self._ready and len(self._ids) > 0
 
 
 # ═══════════════════════════════════════════════════════════════

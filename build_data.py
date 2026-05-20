@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 构建预计算数据 — 本地运行一次，生成 data/documents.json + data/embeddings.npz
+使用智谱 Embedding API 编码文档，需设置环境变量 ZHIPU_API_KEY
 之后将 data/ 目录一起提交到仓库，Vercel 冷启动时直接加载
 """
 
@@ -11,11 +12,15 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from rag_engine import RAGEngine, Document
-from rag_engine import EmbeddingIndex
+from rag_engine import RAGEngine, Document, EmbeddingIndex, ZHIPU_API_KEY
 
 
 def build():
+    if not ZHIPU_API_KEY:
+        print("[ERROR] ZHIPU_API_KEY 环境变量未设置")
+        print("请设置后重试: $env:ZHIPU_API_KEY='your_key'  (PowerShell)")
+        return
+
     source_files = [
         "深圳市社保法律法规汇编.txt",
         "深圳市住房公积金法律法规汇编.txt",

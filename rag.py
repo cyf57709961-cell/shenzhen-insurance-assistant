@@ -236,19 +236,9 @@ class EnhancedRAG:
     # ── MMR 多样性选择 ──────────────────────────────────────────
 
     def _document_similarity(self, doc_a: Dict, doc_b: Dict) -> float:
+        """Jaccard similarity — API embedding 对 MMR 来说太慢"""
         text_a = doc_a["parent"]["content"]
         text_b = doc_b["parent"]["content"]
-
-        emb_idx = None
-        if self.rag_engine:
-            emb_idx = self.rag_engine.search_engine.embedding_index
-        if emb_idx and emb_idx.is_ready():
-            va = emb_idx.encode_text(text_a)
-            vb = emb_idx.encode_text(text_b)
-            if va and vb:
-                from rag_engine import _cosine_sim
-                return _cosine_sim(va, vb)
-
         from rag_engine import _tokenize
         wa = set(_tokenize(text_a))
         wb = set(_tokenize(text_b))
