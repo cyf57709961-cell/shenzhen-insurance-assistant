@@ -3,6 +3,10 @@
     {
       "src": "api/chat.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
