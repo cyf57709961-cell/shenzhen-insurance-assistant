@@ -75,17 +75,18 @@ def _init_rag():
         engine.rebuild_index(source_files, encoding='gb18030')
 
         # 如果 ZHIPU_API_KEY 存在，编码 embedding
-        child_docs = [d for d in engine.search_engine.child_docs]
-        if child_docs:
-            emb_idx = engine.search_engine.embedding_index
-            if emb_idx._call_api(["test"]):
+        from rag_engine import ZHIPU_API_KEY
+        if ZHIPU_API_KEY:
+            child_docs = [d for d in engine.search_engine.child_docs]
+            if child_docs:
                 print("[INFO] Encoding embeddings via API (fallback)...")
+                emb_idx = engine.search_engine.embedding_index
                 texts = [d.content for d in child_docs]
                 ids = [str(i) for i in range(len(child_docs))]
                 embeddings = emb_idx.encode_documents_batch(texts)
                 emb_idx.populate_from_precomputed(ids, embeddings)
-            else:
-                print("[WARN] ZHIPU_API_KEY not set, semantic search disabled (BM25 only)")
+        else:
+            print("[WARN] ZHIPU_API_KEY not set, semantic search disabled (BM25 only)")
 
     print(f"[OK] RAG engine ready ({engine.get_stats()})")
     return _rag
@@ -95,7 +96,6 @@ def _init_rag():
 
 def _stream_response(wfile, query: str, profile: dict, history: list):
     """调用 RAG 流式生成，将 token 写入 SSE 事件"""
-    rag = _init_rag()
 
     def send_event(data_str):
         wfile.write(f"data: {data_str}\n\n".encode('utf-8'))
@@ -104,6 +104,7 @@ def _stream_response(wfile, query: str, profile: dict, history: list):
         send_event(json.dumps({"token": token}, ensure_ascii=False))
 
     try:
+        rag = _init_rag()
         answer, _ = rag.chat_streaming(query, cb, history, profile=profile)
         send_event(json.dumps({"done": True, "full_answer": answer}, ensure_ascii=False))
     except Exception as e:
