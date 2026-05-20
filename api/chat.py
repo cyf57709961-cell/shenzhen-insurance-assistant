@@ -99,6 +99,10 @@ def _stream_response(wfile, query: str, profile: dict, history: list):
 
     def send_event(data_str):
         wfile.write(f"data: {data_str}\n\n".encode('utf-8'))
+        try:
+            wfile.flush()
+        except Exception:
+            pass
 
     def cb(token):
         send_event(json.dumps({"token": token}, ensure_ascii=False))

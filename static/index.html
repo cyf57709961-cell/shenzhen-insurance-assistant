@@ -1402,6 +1402,10 @@ function send() {
               }
             } else if (parsed.done) {
               fullText = parsed.full_answer || fullText;
+              clearTimeout(timer);
+              finishMessage(asst, fullText);
+              if (reader) { try { reader.cancel(); } catch(e) {} }
+              return;
             } else if (parsed.error) {
               fullText += '\n\n⚠ ' + parsed.error;
             }
@@ -1422,13 +1426,13 @@ function send() {
 
   function finishMessage(el, text) {
     clearTimeout(timer);
-    if (aborted) return;
+    if (!streaming) return;
     var bubble = el.querySelector('.bubble');
     bubble.classList.remove('streaming', 'typing');
     if (text) {
       bubble.innerHTML = renderMarkdown(text);
       chatHistory.push({ role: 'assistant', content: text });
-    } else {
+    } else if (!aborted) {
       bubble.textContent = '抱歉，暂时无法回答这个问题。';
     }
     streaming = false;
